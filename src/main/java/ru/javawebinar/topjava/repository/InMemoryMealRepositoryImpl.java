@@ -3,15 +3,18 @@ package ru.javawebinar.topjava.repository;
 import ru.javawebinar.topjava.model.Meal;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class InMemoryMealRepository {
-    public static final int CALORIES_PER_DAY = 2000;
+public class InMemoryMealRepositoryImpl implements MealRepository {
+    public static final AtomicInteger mealCounter = new AtomicInteger(0);
     private final List<Meal> mealList;
 
     {
-        mealList = new ArrayList<>();
+        mealList = new CopyOnWriteArrayList<>();
         mealList.add(new Meal(LocalDateTime.of(2023, 10, 7, 10, 0),
                 "Завтрак", 500));
         mealList.add(new Meal(LocalDateTime.of(2023, 10, 7, 14, 0),
@@ -32,7 +35,32 @@ public class InMemoryMealRepository {
                 "Ужин", 710));
     }
 
-    public List<Meal> getAllMeals() {
+    public List<Meal> getAll() {
         return mealList;
+    }
+
+    @Override
+    public Meal getMealById(int id) {
+        return mealList.stream()
+                .filter(meal -> meal.getId() == id)
+                .findFirst()
+                .orElseThrow(NoSuchElementException::new);
+    }
+
+    @Override
+    public void addMeal(Meal meal) {
+        mealList.add(meal);
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Override
+    public void updateMeal(Meal meal) {
+        Meal oldMeal = getMealById(meal.getId());
+        Collections.replaceAll(mealList, oldMeal, meal);
+    }
+
+    @Override
+    public void delete(int id) {
+        mealList.removeIf(meal -> meal.getId() == id);
     }
 }
