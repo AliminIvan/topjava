@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.Objects.*;
+
 public class InMemoryMealRepository implements MealRepository {
     private final AtomicInteger counter = new AtomicInteger(0);
     private final Map<Integer, Meal> repository;
@@ -56,10 +58,7 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal update(Meal meal) {
-        Integer id = meal.getId();
-        Meal oldValue = repository.get(id);
-        boolean result = repository.replace(id, oldValue, meal);
-        return result ? meal : null;
+        return nonNull(repository.replace(meal.getId(), meal)) ? meal : null;
     }
 
     @Override
