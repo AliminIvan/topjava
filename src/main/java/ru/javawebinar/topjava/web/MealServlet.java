@@ -24,7 +24,6 @@ public class MealServlet extends HttpServlet {
     public static final Logger log = getLogger(MealServlet.class);
     public static final String MEALS_JSP = "/meals.jsp";
     public static final String EDIT_JSP = "/edit.jsp";
-    public static final String MEALS = "/topjava/meals";
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     public static final int CALORIES_PER_DAY = 2000;
     private MealRepository repository;
@@ -38,10 +37,7 @@ public class MealServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String path;
         log.debug("getting action parameter from request");
-        String action = req.getParameter("action");
-        if (isNull(action)) {
-            action = "null";
-        }
+        String action = String.valueOf(req.getParameter("action"));
         log.debug("action parameter: {}", action);
         switch (action) {
             case "delete":
@@ -49,8 +45,8 @@ public class MealServlet extends HttpServlet {
                 int deleteId = Integer.parseInt(req.getParameter("id"));
                 log.debug("deleting meal object with id: {} from repository", deleteId);
                 repository.delete(deleteId);
-                path = MEALS;
-                log.debug("redirecting to: {}", MEALS);
+                path = req.getRequestURI();
+                log.debug("redirecting to: {}", path);
                 resp.sendRedirect(path);
                 break;
             case "edit":
@@ -100,7 +96,7 @@ public class MealServlet extends HttpServlet {
             log.debug("updating meal object with id: {}", meal.getId());
             repository.update(meal);
         }
-        resp.sendRedirect(MEALS);
+        resp.sendRedirect(req.getRequestURI());
     }
 
     private static void forward(HttpServletRequest req, HttpServletResponse resp, String path) throws ServletException, IOException {

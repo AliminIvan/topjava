@@ -14,28 +14,30 @@ public class InMemoryMealRepository implements MealRepository {
     {
         repository = new ConcurrentHashMap<>();
 
-        List<Meal> meals = new ArrayList<>();
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 7, 10, 0),
-                "Завтрак", 500));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 7, 14, 0),
-                "Обед", 1000));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 7, 19, 0),
-                "Ужин", 900));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 8, 9, 0),
-                "Завтрак", 400));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 8, 13, 0),
-                "Обед", 900));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 8, 18, 0),
-                "Ужин", 600));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 9, 9, 30),
-                "Завтрак", 450));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 9, 13, 40),
-                "Обед", 780));
-        meals.add(new Meal(null, LocalDateTime.of(2023, 10, 9, 20, 10),
-                "Ужин", 710));
+        List<Meal> meals = Arrays.asList(
+                new Meal(null, LocalDateTime.of(2023, 10, 7, 10, 0),
+                        "Завтрак", 500),
+                new Meal(null, LocalDateTime.of(2023, 10, 7, 14, 0),
+                        "Обед", 1000),
+                new Meal(null, LocalDateTime.of(2023, 10, 7, 19, 0),
+                        "Ужин", 900),
+                new Meal(null, LocalDateTime.of(2023, 10, 8, 9, 0),
+                        "Завтрак", 400),
+                new Meal(null, LocalDateTime.of(2023, 10, 8, 13, 0),
+                        "Обед", 900),
+                new Meal(null, LocalDateTime.of(2023, 10, 8, 18, 0),
+                        "Ужин", 600),
+                new Meal(null, LocalDateTime.of(2023, 10, 9, 9, 30),
+                        "Завтрак", 450),
+                new Meal(null, LocalDateTime.of(2023, 10, 9, 13, 40),
+                        "Обед", 780),
+                new Meal(null, LocalDateTime.of(2023, 10, 9, 20, 10),
+                        "Ужин", 710)
+        );
         meals.forEach(this::add);
     }
 
+    @Override
     public List<Meal> getAll() {
         return new ArrayList<>(repository.values());
     }
@@ -54,7 +56,7 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal update(Meal meal) {
-        return repository.put(meal.getId(), meal);
+        return repository.merge(meal.getId(), meal, (oldValue, newValue) -> newValue);
     }
 
     @Override

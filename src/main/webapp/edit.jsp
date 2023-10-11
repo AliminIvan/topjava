@@ -2,12 +2,15 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html lang="ru">
 <head>
-  <title>Edit Meal</title>
+  <title>Edit meal</title>
 </head>
 <body>
 <h3><a href="index.html">Home</a></h3>
 <hr>
-<h2>Edit meal</h2>
+
+<c:set var="title" value="${meal.id == null ? 'Add meal' : 'Edit meal'}"/>
+
+<h2>${title}</h2>
 
 <form method="post" action="meals">
 
