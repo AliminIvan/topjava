@@ -21,15 +21,16 @@ import static java.util.Objects.isNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class MealServlet extends HttpServlet {
-    public static final Logger log = getLogger(MealServlet.class);
-    public static final String MEALS_JSP = "/meals.jsp";
-    public static final String EDIT_JSP = "/edit.jsp";
-    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    public static final int CALORIES_PER_DAY = 2000;
+    private static final Logger log = getLogger(MealServlet.class);
+    private static final String MEALS_JSP = "/meals.jsp";
+    private static final String EDIT_JSP = "/editMeal.jsp";
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final int CALORIES_PER_DAY = 2000;
     private MealRepository repository;
 
     @Override
-    public void init(ServletConfig config) {
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
         repository = new InMemoryMealRepository();
     }
 

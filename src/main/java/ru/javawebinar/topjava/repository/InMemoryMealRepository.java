@@ -56,7 +56,10 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal update(Meal meal) {
-        return repository.merge(meal.getId(), meal, (oldValue, newValue) -> newValue);
+        Integer id = meal.getId();
+        Meal oldValue = repository.get(id);
+        boolean result = repository.replace(id, oldValue, meal);
+        return result ? meal : null;
     }
 
     @Override
