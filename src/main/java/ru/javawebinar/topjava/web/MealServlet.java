@@ -2,11 +2,12 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.model.MealTo;
-import ru.javawebinar.topjava.repository.InMemoryMealRepositoryImpl;
+import ru.javawebinar.topjava.repository.InMemoryMealRepository;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.MealsUtil;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,82 +16,95 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
-import static ru.javawebinar.topjava.util.Constants.*;
 
 public class MealServlet extends HttpServlet {
     public static final Logger log = getLogger(MealServlet.class);
-    private final MealRepository repository;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public static final String MEALS_JSP = "/meals.jsp";
+    public static final String EDIT_JSP = "/edit.jsp";
+    public static final String MEALS = "/topjava/meals";
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public static final int CALORIES_PER_DAY = 2000;
+    private MealRepository repository;
 
-    public MealServlet() {
-        super();
-        repository = new InMemoryMealRepositoryImpl();
+    @Override
+    public void init(ServletConfig config) {
+        repository = new InMemoryMealRepository();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String path;
+        log.debug("getting action parameter from request");
         String action = req.getParameter("action");
-        if (nonNull(action) && action.equalsIgnoreCase("delete")) {
-            int mealId = Integer.parseInt(req.getParameter("mealId"));
-            log.debug("deleting meal with id: {}", mealId);
-            repository.delete(mealId);
-        } else if (nonNull(action) && action.equalsIgnoreCase("update")) {
-            int mealId = Integer.parseInt(req.getParameter("mealId"));
-            log.debug("getting meal with id: {} from mealRepository", mealId);
-            Meal meal = repository.getMealById(mealId);
-            log.debug("setting request attributes for update");
-            req.setAttribute("mealId", meal.getId());
-            req.setAttribute("mealDateTime", meal.getDateTime());
-            req.setAttribute("mealDescription", meal.getDescription());
-            req.setAttribute("mealCalories", meal.getCalories());
-            log.debug("request forward to {}", UPDATE_MEAL_JSP);
-            req.getRequestDispatcher(UPDATE_MEAL_JSP).forward(req, resp);
-        } else if (nonNull(action) && action.equalsIgnoreCase("insert")) {
-            log.debug("request forward to {}", ADD_MEAL_JSP);
-            req.getRequestDispatcher(ADD_MEAL_JSP).forward(req, resp);
+        if (isNull(action)) {
+            action = "null";
         }
-        showAllMeals(req, resp);
+        log.debug("action parameter: {}", action);
+        switch (action) {
+            case "delete":
+                log.debug("getting id parameter from request");
+                int deleteId = Integer.parseInt(req.getParameter("id"));
+                log.debug("deleting meal object with id: {} from repository", deleteId);
+                repository.delete(deleteId);
+                path = MEALS;
+                log.debug("redirecting to: {}", MEALS);
+                resp.sendRedirect(path);
+                break;
+            case "edit":
+                log.debug("getting id parameter from request");
+                int editId = Integer.parseInt(req.getParameter("id"));
+                log.debug("getting meal object with id: {} from repository for update", editId);
+                Meal updatableMeal = repository.getById(editId);
+                log.debug("setting updatable meal with id: {} as a request attribute for {}", updatableMeal.getId(), EDIT_JSP);
+                req.setAttribute("meal", updatableMeal);
+                path = EDIT_JSP;
+                log.debug("request forward to {}", EDIT_JSP);
+                forward(req, resp, path);
+                break;
+            case "insert":
+                Meal newMeal = new Meal();
+                log.debug("setting new empty meal object as a request attribute for {}", EDIT_JSP);
+                req.setAttribute("meal", newMeal);
+                path = EDIT_JSP;
+                log.debug("request forward to {}", EDIT_JSP);
+                forward(req, resp, path);
+                break;
+            default:
+                path = MEALS_JSP;
+                log.debug("setting request attributes for {}", MEALS_JSP);
+                req.setAttribute("formatter", FORMATTER);
+                req.setAttribute("meals", MealsUtil.filteredByStreams(repository.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY));
+                log.debug("request forward to {}", MEALS_JSP);
+                forward(req, resp, path);
+        }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
-        log.debug("getting request parameters from form");
+        Meal meal = new Meal();
+        log.debug("getting request parameters from form for add/update");
         String id = req.getParameter("id");
-        LocalDateTime dateTime = LocalDateTime.parse(req.getParameter("dateTime"));
-        String description = req.getParameter("description");
-        int calories = Integer.parseInt(req.getParameter("calories"));
-        if (isNull(id)) {
-            Meal meal = new Meal(dateTime, description, calories);
-            log.debug("adding new Meal to mealRepository");
-            repository.addMeal(meal);
+        meal.setDateTime(LocalDateTime.parse(req.getParameter("dateTime")));
+        meal.setDescription(req.getParameter("description"));
+        meal.setCalories(Integer.parseInt(req.getParameter("calories")));
+        if (isNull(id) || id.isEmpty()) {
+            log.debug("adding new meal object to repository");
+            Meal addedMeal = repository.add(meal);
+            log.debug("new meal with id: {} added to repository", addedMeal.getId());
         } else {
-            Meal meal = repository.getMealById(Integer.parseInt(id));
-            meal.setDateTime(dateTime);
-            meal.setDescription(description);
-            meal.setCalories(calories);
-            log.debug("updating meal with id: {} in mealRepository", id);
-            repository.updateMeal(meal);
+            meal.setId(Integer.parseInt(id));
+            log.debug("updating meal object with id: {}", meal.getId());
+            repository.update(meal);
         }
-        showAllMeals(req, resp);
+        resp.sendRedirect(MEALS);
     }
 
-    private void showAllMeals(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.debug("getting all meals from mealRepository");
-        List<Meal> allMeals = repository.getAll();
-        List<MealTo> mealToList =
-                MealsUtil.filteredByStreams(
-                        allMeals, LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY
-                );
-        log.debug("setting request attributes for {}", MEALS_JSP);
-        req.setAttribute("formatter", formatter);
-        req.setAttribute("meals", mealToList);
-        log.debug("request forward to {}", MEALS_JSP);
-        req.getRequestDispatcher(MEALS_JSP).forward(req, resp);
+    private static void forward(HttpServletRequest req, HttpServletResponse resp, String path) throws ServletException, IOException {
+        RequestDispatcher view = req.getRequestDispatcher(path);
+        view.forward(req, resp);
     }
 }

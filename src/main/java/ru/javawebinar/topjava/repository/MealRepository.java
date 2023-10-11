@@ -3,15 +3,14 @@ package ru.javawebinar.topjava.repository;
 import ru.javawebinar.topjava.model.Meal;
 
 import java.util.List;
-
 public interface MealRepository {
     List<Meal> getAll();
 
-    Meal getMealById(int id);
+    Meal getById(int id);
 
-    void addMeal(Meal meal);
+    Meal add(Meal meal);
 
-    void updateMeal(Meal meal);
+    Meal update(Meal meal);
 
     void delete(int id);
 }

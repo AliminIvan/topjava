@@ -4,18 +4,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static ru.javawebinar.topjava.repository.InMemoryMealRepositoryImpl.mealCounter;
-
 public class Meal {
-    private final Integer id;
+    private Integer id;
     private LocalDateTime dateTime;
-
     private String description;
-
     private int calories;
 
-    public Meal(LocalDateTime dateTime, String description, int calories) {
-        this.id = mealCounter.incrementAndGet();
+    public Meal() {
+    }
+
+    public Meal(Integer id, LocalDateTime dateTime, String description, int calories) {
+        this.id = id;
         this.dateTime = dateTime;
         this.description = description;
         this.calories = calories;
@@ -43,6 +42,10 @@ public class Meal {
 
     public LocalTime getTime() {
         return dateTime.toLocalTime();
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public void setDateTime(LocalDateTime dateTime) {
