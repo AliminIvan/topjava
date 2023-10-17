@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static ru.javawebinar.topjava.util.MealsUtil.DEFAULT_CALORIES_PER_DAY;
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
@@ -32,14 +34,17 @@ public class MealRestController {
     }
 
     public List<MealTo> getAll(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
-        log.info("getAll");
+        log.info("getAll with filter");
         Optional<LocalDate> optionalStartDate = Optional.ofNullable(startDate);
         Optional<LocalDate> optionalEndDate = Optional.ofNullable(endDate);
         Optional<LocalTime> optionalStartTime = Optional.ofNullable(startTime);
         Optional<LocalTime> optionalEndTime = Optional.ofNullable(endTime);
         LocalDateTime start = LocalDateTime.of(optionalStartDate.orElse(LocalDate.MIN), optionalStartTime.orElse(LocalTime.MIN));
         LocalDateTime end = LocalDateTime.of(optionalEndDate.orElse(LocalDate.MAX), optionalEndTime.orElse(LocalTime.MAX));
-        return MealsUtil.getFilteredTos(service.getAll(authUserId()), DEFAULT_CALORIES_PER_DAY, start, end);
+        return MealsUtil.getFilteredTos(service.getAll(authUserId()), DEFAULT_CALORIES_PER_DAY, start, end).stream()
+                .filter(mealTo -> DateTimeUtil.isBetweenHalfOpen(mealTo.getDateTime().toLocalTime(),
+                        start.toLocalTime(), end.toLocalTime()))
+                .collect(Collectors.toList());
     }
 
     public Meal get(int id) {
