@@ -17,9 +17,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ru.javawebinar.topjava.util.MealsUtil.DEFAULT_CALORIES_PER_DAY;
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
+import static ru.javawebinar.topjava.web.SecurityUtil.authUserCaloriesPerDay;
 import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 @Controller
 public class MealRestController {
@@ -30,7 +30,7 @@ public class MealRestController {
 
     public List<MealTo> getAll() {
         log.info("getAll");
-        return MealsUtil.getTos(service.getAll(authUserId()), DEFAULT_CALORIES_PER_DAY);
+        return MealsUtil.getTos(service.getAll(authUserId()), authUserCaloriesPerDay());
     }
 
     public List<MealTo> getAll(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
@@ -41,7 +41,7 @@ public class MealRestController {
         Optional<LocalTime> optionalEndTime = Optional.ofNullable(endTime);
         LocalDateTime start = LocalDateTime.of(optionalStartDate.orElse(LocalDate.MIN), optionalStartTime.orElse(LocalTime.MIN));
         LocalDateTime end = LocalDateTime.of(optionalEndDate.orElse(LocalDate.MAX), optionalEndTime.orElse(LocalTime.MAX));
-        return MealsUtil.getFilteredTos(service.getAll(authUserId()), DEFAULT_CALORIES_PER_DAY, start, end).stream()
+        return MealsUtil.getFilteredTos(service.getAll(authUserId()), authUserCaloriesPerDay(), start, end).stream()
                 .filter(mealTo -> DateTimeUtil.isBetweenHalfOpen(mealTo.getDateTime().toLocalTime(),
                         start.toLocalTime(), end.toLocalTime()))
                 .collect(Collectors.toList());
