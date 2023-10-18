@@ -38,7 +38,7 @@ public class MealRestController {
                 Optional.ofNullable(startTime).orElse(LocalTime.MIN));
         LocalDateTime end = LocalDateTime.of(Optional.ofNullable(endDate).orElse(LocalDate.MAX),
                 Optional.ofNullable(endTime).orElse(LocalTime.MAX));
-        return MealsUtil.getTos(service.getAllByDateTime(authUserId(), start, end), authUserCaloriesPerDay());
+        return MealsUtil.getFilteredTos(service.getAll(authUserId()), authUserCaloriesPerDay(), start, end);
     }
 
     public Meal get(int id) {
@@ -47,10 +47,9 @@ public class MealRestController {
     }
 
     public Meal create(Meal meal) {
-        meal.setUserId(authUserId());
         log.info("create {}", meal);
         checkNew(meal);
-        return service.create(meal, meal.getUserId());
+        return service.create(meal, authUserId());
     }
 
     public void delete(int id) {
@@ -59,9 +58,8 @@ public class MealRestController {
     }
 
     public void update(Meal meal, int id) {
-        meal.setUserId(authUserId());
         log.info("update {} with id={}", meal, id);
         assureIdConsistent(meal, id);
-        service.update(meal, meal.getUserId());
+        service.update(meal, authUserId());
     }
 }

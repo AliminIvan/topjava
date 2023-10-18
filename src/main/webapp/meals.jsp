@@ -28,7 +28,7 @@
     <br>
     <section>
         <form method="get" action="meals">
-            <input hidden type="text" name="action" value="all">
+            <input hidden type="text" name="action" value="filter">
             From date (inclusive)<br>
             <input type="date" value="${param.startDate}" name="startDate"><br>
 
