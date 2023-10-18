@@ -30,16 +30,16 @@
         <form method="get" action="meals">
             <input hidden type="text" name="action" value="all">
             From date (inclusive)<br>
-            <input type="date" value="${startDate}" name="startDate"><br>
+            <input type="date" value="${param.startDate}" name="startDate"><br>
 
             To date (inclusive)<br>
-            <input type="date" value="${endDate}" name="endDate"><br>
+            <input type="date" value="${param.endDate}" name="endDate"><br>
 
             From time (inclusive)<br>
-            <input type="time" value="${startTime}" name="startTime"><br>
+            <input type="time" value="${param.startTime}" name="startTime"><br>
 
             To time (exclusive)<br>
-            <input type="time" value="${endTime}" name="endTime"><br>
+            <input type="time" value="${param.endTime}" name="endTime"><br>
 
             <button type="submit">Filter</button>
             <button type="reset">Cancel</button>

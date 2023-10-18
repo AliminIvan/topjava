@@ -7,7 +7,6 @@ import org.springframework.stereotype.Controller;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
-import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
@@ -15,15 +14,15 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 import static ru.javawebinar.topjava.web.SecurityUtil.authUserCaloriesPerDay;
 import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
+
 @Controller
 public class MealRestController {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private MealService service;
@@ -33,18 +32,13 @@ public class MealRestController {
         return MealsUtil.getTos(service.getAll(authUserId()), authUserCaloriesPerDay());
     }
 
-    public List<MealTo> getAll(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+    public List<MealTo> getAllByDateTime(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
         log.info("getAll with filter");
-        Optional<LocalDate> optionalStartDate = Optional.ofNullable(startDate);
-        Optional<LocalDate> optionalEndDate = Optional.ofNullable(endDate);
-        Optional<LocalTime> optionalStartTime = Optional.ofNullable(startTime);
-        Optional<LocalTime> optionalEndTime = Optional.ofNullable(endTime);
-        LocalDateTime start = LocalDateTime.of(optionalStartDate.orElse(LocalDate.MIN), optionalStartTime.orElse(LocalTime.MIN));
-        LocalDateTime end = LocalDateTime.of(optionalEndDate.orElse(LocalDate.MAX), optionalEndTime.orElse(LocalTime.MAX));
-        return MealsUtil.getFilteredTos(service.getAll(authUserId()), authUserCaloriesPerDay(), start, end).stream()
-                .filter(mealTo -> DateTimeUtil.isBetweenHalfOpen(mealTo.getDateTime().toLocalTime(),
-                        start.toLocalTime(), end.toLocalTime()))
-                .collect(Collectors.toList());
+        LocalDateTime start = LocalDateTime.of(Optional.ofNullable(startDate).orElse(LocalDate.MIN),
+                Optional.ofNullable(startTime).orElse(LocalTime.MIN));
+        LocalDateTime end = LocalDateTime.of(Optional.ofNullable(endDate).orElse(LocalDate.MAX),
+                Optional.ofNullable(endTime).orElse(LocalTime.MAX));
+        return MealsUtil.getTos(service.getAllByDateTime(authUserId(), start, end), authUserCaloriesPerDay());
     }
 
     public Meal get(int id) {
@@ -53,9 +47,10 @@ public class MealRestController {
     }
 
     public Meal create(Meal meal) {
+        meal.setUserId(authUserId());
         log.info("create {}", meal);
         checkNew(meal);
-        return service.create(meal);
+        return service.create(meal, meal.getUserId());
     }
 
     public void delete(int id) {
@@ -64,9 +59,9 @@ public class MealRestController {
     }
 
     public void update(Meal meal, int id) {
+        meal.setUserId(authUserId());
         log.info("update {} with id={}", meal, id);
         assureIdConsistent(meal, id);
-        service.update(meal);
+        service.update(meal, meal.getUserId());
     }
-
 }
