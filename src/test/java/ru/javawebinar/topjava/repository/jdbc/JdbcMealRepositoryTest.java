@@ -10,15 +10,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertThrows;
+import static ru.javawebinar.topjava.MealTestData.assertMatch;
 import static ru.javawebinar.topjava.MealTestData.*;
+import static ru.javawebinar.topjava.UserTestData.*;
 
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
@@ -37,9 +39,9 @@ public class JdbcMealRepositoryTest {
 
     @Test
     public void saveWhenNewMeal() {
-        Meal savedMeal = jdbcMealRepository.save(getNew(), USER_ID);
+        Meal savedMeal = jdbcMealRepository.save(MealTestData.getNew(), USER_ID);
         Integer id = savedMeal.getId();
-        Meal newMeal = getNew();
+        Meal newMeal = MealTestData.getNew();
         newMeal.setId(id);
         assertMatch(savedMeal, newMeal);
         assertMatch(jdbcMealRepository.get(id, USER_ID), newMeal);
@@ -47,20 +49,20 @@ public class JdbcMealRepositoryTest {
 
     @Test
     public void saveWhenUpdatingMeal() {
-        Meal updated = getUpdated();
+        Meal updated = MealTestData.getUpdated();
         jdbcMealRepository.save(updated, USER_ID);
-        assertMatch(jdbcMealRepository.get(USER_MEAL_ID, USER_ID), getUpdated());
+        assertMatch(jdbcMealRepository.get(USER_MEAL_ID, USER_ID), MealTestData.getUpdated());
     }
 
     @Test
     public void saveWhenUpdatingMealWithWrongUserId() {
-        Meal updated = getUpdated();
+        Meal updated = MealTestData.getUpdated();
         Assert.assertNull(jdbcMealRepository.save(updated, ADMIN_ID));
     }
 
     @Test
     public void saveWhenUpdatingMealNotFound() {
-        Meal updated = getUpdated();
+        Meal updated = MealTestData.getUpdated();
         Assert.assertNull(jdbcMealRepository.save(updated, NOT_FOUND));
     }
 
@@ -107,8 +109,7 @@ public class JdbcMealRepositoryTest {
     @Test
     public void getAll() {
         List<Meal> actual = jdbcMealRepository.getAll(USER_ID);
-        List<Meal> expected = Arrays.asList(expectedUserMeal, userMeal1, userMeal2, userMeal3, userMeal4, userMeal5);
-        expected.sort(Comparator.comparing(Meal::getDateTime).reversed());
+        List<Meal> expected = Arrays.asList(userMeal5, userMeal4, userMeal3, userMeal2, userMeal1, expectedUserMeal);
         assertMatch(actual, expected);
     }
 
@@ -127,16 +128,14 @@ public class JdbcMealRepositoryTest {
     @Test
     public void getBetweenHalfOpenFrom() {
         List<Meal> actual = jdbcMealRepository.getBetweenHalfOpen(LOCAL_DATE_TIME, MAX_DATE, USER_ID);
-        List<Meal> expected = Arrays.asList(expectedUserMeal, userMeal1, userMeal2, userMeal3, userMeal4, userMeal5);
-        expected.sort(Comparator.comparing(Meal::getDateTime).reversed());
+        List<Meal> expected = Arrays.asList(userMeal5, userMeal4, userMeal3, userMeal2, userMeal1, expectedUserMeal);
         assertMatch(actual, expected);
     }
 
     @Test
     public void getBetweenHalfOpenTo() {
         List<Meal> actual = jdbcMealRepository.getBetweenHalfOpen(MIN_DATE, LOCAL_DATE_TIME.plusDays(1), USER_ID);
-        List<Meal> expected = Arrays.asList(expectedUserMeal, userMeal1, userMeal2);
-        expected.sort(Comparator.comparing(Meal::getDateTime).reversed());
+        List<Meal> expected = Arrays.asList(userMeal2, userMeal1, expectedUserMeal);
         assertMatch(actual, expected);
     }
 }
