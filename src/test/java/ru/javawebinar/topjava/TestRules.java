@@ -1,4 +1,4 @@
-package ru.javawebinar.topjava.repository;
+package ru.javawebinar.topjava;
 
 import org.junit.rules.ExternalResource;
 import org.junit.rules.Stopwatch;
