@@ -15,7 +15,7 @@ public class TestRules {
     public static final Stopwatch EXECUTION_TIME_FOR_EACH_TEST = new Stopwatch() {
         @Override
         protected void finished(long nanos, Description description) {
-            String currentTestTime = String.format("Test method '%s' was executed in %d ms", description.getMethodName(), TimeUnit.NANOSECONDS.toMillis(nanos));
+            String currentTestTime = String.format("%-30s%10d ms", description.getMethodName(), TimeUnit.NANOSECONDS.toMillis(nanos));
             allTestsTime.append(currentTestTime).append("\n");
             log.info(currentTestTime);
         }
@@ -24,7 +24,7 @@ public class TestRules {
     public static final ExternalResource EXECUTION_TIME_STAT_FOR_ALL_TESTS = new ExternalResource() {
         @Override
         protected void after() {
-            log.info("\n\nTest class execution time statistics: \n" + allTestsTime);
+            log.info("\n\n" + allTestsTime);
         }
     };
 }
