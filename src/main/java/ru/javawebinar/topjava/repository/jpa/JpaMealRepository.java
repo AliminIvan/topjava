@@ -12,6 +12,8 @@ import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 @Repository
 @Transactional(readOnly = true)
 public class JpaMealRepository implements MealRepository {
@@ -28,11 +30,12 @@ public class JpaMealRepository implements MealRepository {
             entityManager.persist(meal);
             return meal;
         } else {
-            Meal mealFromDb = entityManager.find(Meal.class, meal.getId());
-            User user = mealFromDb.getUser();
-            meal.setUser(user);
-            Integer userIdFromDb = user.getId();
-            return userIdFromDb.equals(userId) ? entityManager.merge(meal) : null;
+            Meal mealFromDb = get(meal.getId(), userId);
+            if (isNull(mealFromDb)) {
+                return null;
+            }
+            meal.setUser(mealFromDb.getUser());
+            return entityManager.merge(meal);
         }
     }
 
