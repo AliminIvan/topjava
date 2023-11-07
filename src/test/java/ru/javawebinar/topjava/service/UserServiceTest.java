@@ -20,6 +20,7 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import java.util.List;
 
 import static org.junit.Assert.assertThrows;
+import static ru.javawebinar.topjava.Profiles.REPOSITORY_IMPLEMENTATION;
 import static ru.javawebinar.topjava.UserTestData.*;
 
 @ContextConfiguration({
@@ -28,7 +29,7 @@ import static ru.javawebinar.topjava.UserTestData.*;
 })
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
-@ActiveProfiles(resolver = ActiveDbProfileResolver.class)
+@ActiveProfiles(resolver = ActiveDbProfileResolver.class, profiles = REPOSITORY_IMPLEMENTATION)
 public class UserServiceTest {
 
     @Autowired

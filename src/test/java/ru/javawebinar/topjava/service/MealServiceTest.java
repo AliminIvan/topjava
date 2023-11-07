@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertThrows;
 import static org.slf4j.LoggerFactory.getLogger;
 import static ru.javawebinar.topjava.MealTestData.*;
+import static ru.javawebinar.topjava.Profiles.REPOSITORY_IMPLEMENTATION;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 
@@ -32,8 +33,7 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 })
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
-@ActiveProfiles(resolver = ActiveDbProfileResolver.class)
-@Ignore
+@ActiveProfiles(resolver = ActiveDbProfileResolver.class, profiles = REPOSITORY_IMPLEMENTATION)
 public class MealServiceTest {
     private static final Logger log = getLogger("result");
 
