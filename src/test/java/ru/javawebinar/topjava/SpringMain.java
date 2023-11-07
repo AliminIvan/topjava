@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava;
 
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
@@ -14,10 +13,16 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 
+import static ru.javawebinar.topjava.Profiles.DATAJPA;
+import static ru.javawebinar.topjava.Profiles.POSTGRES_DB;
+
 public class SpringMain {
     public static void main(String[] args) {
         // java 7 automatic resource management (ARM)
-        try (ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml", "spring/inmemory.xml")) {
+        try (ClassPathXmlApplicationContext appCtx = new ClassPathXmlApplicationContext()) {
+            appCtx.getEnvironment().setActiveProfiles(POSTGRES_DB, DATAJPA);
+            appCtx.setConfigLocations("spring/spring-app.xml", "spring/spring-db.xml");
+            appCtx.refresh();
             System.out.println("Bean definition names: " + Arrays.toString(appCtx.getBeanDefinitionNames()));
             AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
             adminUserController.create(new User(null, "userName", "email@mail.ru", "password", Role.ADMIN));
