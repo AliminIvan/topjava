@@ -18,7 +18,7 @@ public class PostgresJdbcMealRepository extends JdbcMealRepository {
     }
 
     @Override
-    protected <T> T getDateTimeForDB(LocalDateTime dateTime) {
-        return (T) dateTime;
+    protected LocalDateTime getDateTimeForDB(LocalDateTime dateTime) {
+        return dateTime;
     }
 }
