@@ -1,11 +1,14 @@
 package ru.javawebinar.topjava.repository.datajpa;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static java.util.Objects.nonNull;
 
 @Repository
 public class DataJpaMealRepository implements MealRepository {
@@ -17,13 +20,15 @@ public class DataJpaMealRepository implements MealRepository {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     @Override
     public Meal save(Meal meal, int userId) {
-        meal.setUser(userRepository.getReferenceById(userId));
-        if (meal.isNew()) {
+        if (meal.isNew() || nonNull(get(meal.id(), userId))) {
+            meal.setUser(userRepository.getReferenceById(userId));
             return crudRepository.save(meal);
+        } else {
+            return null;
         }
-        return get(meal.id(), userId) == null ? null : crudRepository.save(meal);
     }
 
     @Override
@@ -33,22 +38,21 @@ public class DataJpaMealRepository implements MealRepository {
 
     @Override
     public Meal get(int id, int userId) {
-        return crudRepository.findByIdAndUserId(id, userId).orElse(null);
+        return crudRepository.findBelongingToUser(id, userId);
     }
 
     @Override
     public List<Meal> getAll(int userId) {
-        return crudRepository.findAllByUserIdOrderByDateTimeDesc(userId);
+        return crudRepository.findAllBelongingToUser(userId);
     }
 
     @Override
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
-        return crudRepository.findAllByUserIdAndDateTimeGreaterThanEqualAndDateTimeLessThanOrderByDateTimeDesc(
-                userId, startDateTime, endDateTime);
+        return crudRepository.findBetweenHalfOpenBelongingToUser(userId, startDateTime, endDateTime);
     }
 
     @Override
-    public Meal getMealWithUser(int id, int userId) {
-        return crudRepository.getMealWithUser(id, userId).orElse(null);
+    public Meal getWithUser(int id, int userId) {
+        return crudRepository.getMealWithUser(id, userId);
     }
 }
