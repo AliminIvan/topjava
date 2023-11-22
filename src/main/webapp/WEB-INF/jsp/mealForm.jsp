@@ -11,7 +11,7 @@
     <c:set var="create"><spring:message code='meal.add'/></c:set>
     <c:set var="edit"><spring:message code='meal.edit'/></c:set>
     <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
-    <h2>${meal.id == null ? create : edit}</h2>
+    <h2>${meal.isNew() ? create : edit}</h2>
     <form method="post" action="meals">
         <input type="hidden" name="id" value="${meal.id}">
         <dl>

@@ -2,7 +2,6 @@ package ru.javawebinar.topjava.repository.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -16,10 +15,7 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 import ru.javawebinar.topjava.util.ValidationUtil;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -105,27 +101,19 @@ public class JdbcUserRepository implements UserRepository {
         if (isNull(roles)) {
             return;
         }
-        List<Role> roleList = List.copyOf(roles);
         jdbcTemplate.batchUpdate(
-                "INSERT INTO user_role (user_id, role) VALUES (?,?)", new BatchPreparedStatementSetter() {
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setInt(1, userId);
-                        ps.setString(2, roleList.get(i).name());
-                    }
-
-                    @Override
-                    public int getBatchSize() {
-                        return roles.size();
-                    }
-                });
+                "INSERT INTO user_role (user_id, role) VALUES (?,?)",
+                roles,
+                roles.size(),
+                (ps, role) -> {
+                    ps.setInt(1, userId);
+                    ps.setString(2, role.name());
+                }
+        );
     }
 
     private void updateRoles(User user) {
         Set<Role> newRoles = user.getRoles();
-        if (isNull(newRoles)) {
-            return;
-        }
         jdbcTemplate.update("DELETE FROM user_role WHERE user_id=?", user.id());
         saveRoles(user.id(), newRoles);
     }
@@ -135,8 +123,8 @@ public class JdbcUserRepository implements UserRepository {
         if (isNull(user)) {
             return null;
         }
-        List<String> roles = jdbcTemplate.queryForList("SELECT role FROM user_role WHERE user_id=?", String.class, user.id());
-        user.setRoles(roles.stream().map(Role::valueOf).collect(Collectors.toSet()));
+        List<Role> roles = jdbcTemplate.queryForList("SELECT role FROM user_role WHERE user_id=?", Role.class, user.id());
+        user.setRoles(Set.copyOf(roles));
         return user;
     }
 }

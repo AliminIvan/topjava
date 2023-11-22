@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
-import ru.javawebinar.topjava.util.MealsUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -16,12 +15,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Objects;
 
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalDate;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
-import static ru.javawebinar.topjava.web.SecurityUtil.authUserCaloriesPerDay;
 import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 
 @Controller
@@ -34,8 +31,7 @@ public class JspMealController extends AbstractMealController {
 
     @GetMapping
     public String getAll(Model model) {
-        log.info("get all meals for user {}", authUserId());
-        model.addAttribute("meals", MealsUtil.getTos(service.getAll(authUserId()), authUserCaloriesPerDay()));
+        model.addAttribute("meals", super.getAll());
         return "meals";
     }
 
@@ -45,19 +41,14 @@ public class JspMealController extends AbstractMealController {
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
         LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
         LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
-        log.info("get filtered meals with startDate:{}, endDate:{}, startTime:{}, endTime:{} for user {}",
-                startDate, endDate, startTime, endTime, authUserId());
-        List<Meal> mealsDateFiltered = service.getBetweenInclusive(startDate, endDate, authUserId());
-        model.addAttribute("meals", MealsUtil.getFilteredTos(mealsDateFiltered, authUserCaloriesPerDay(), startTime, endTime));
+        model.addAttribute("meals", super.getBetween(startDate, startTime, endDate, endTime));
         return "meals";
     }
 
     @GetMapping("/add")
     public String add(Model model) {
         log.info("create new meal for user {}", authUserId());
-        Meal meal = new Meal();
-        meal.setDateTime(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
-        meal.setCalories(100);
+        Meal meal = new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), null, 100);
         model.addAttribute("meal", meal);
         log.info("forward to mealForm");
         return "mealForm";
@@ -75,19 +66,15 @@ public class JspMealController extends AbstractMealController {
 
     @PostMapping
     public String save(HttpServletRequest request) throws UnsupportedEncodingException {
-        request.setCharacterEncoding("UTF-8");
         Meal meal = new Meal(
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
         String id = request.getParameter("id");
         if (StringUtils.hasLength(id)) {
-            log.info("update meal with id={} for user {}", id, authUserId());
-            meal.setId(Integer.parseInt(id));
-            service.update(meal, authUserId());
+            super.update(meal, Integer.parseInt(id));
         } else {
-            log.info("create new meal for user {}", authUserId());
-            service.create(meal, authUserId());
+            super.create(meal);
         }
         return "redirect:/meals";
     }
@@ -95,8 +82,7 @@ public class JspMealController extends AbstractMealController {
     @GetMapping("/delete")
     public String delete(HttpServletRequest request) throws UnsupportedEncodingException {
         int id = getId(request);
-        log.info("delete meal with id={}", id);
-        service.delete(id, authUserId());
+        super.delete(id);
         return "redirect:/meals";
     }
 
