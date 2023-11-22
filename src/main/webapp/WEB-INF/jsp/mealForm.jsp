@@ -10,9 +10,9 @@
     <hr>
     <c:set var="create"><spring:message code='meal.add'/></c:set>
     <c:set var="edit"><spring:message code='meal.edit'/></c:set>
-    <h2>${requestScope.get("action") == 'create' ? create : edit}</h2>
     <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
-    <form method="post" action="${pageContext.request.contextPath}/meals">
+    <h2>${meal.id == null ? create : edit}</h2>
+    <form method="post" action="meals">
         <input type="hidden" name="id" value="${meal.id}">
         <dl>
             <dt><spring:message code="meal.date"/>:</dt>

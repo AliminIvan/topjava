@@ -10,7 +10,7 @@
 <section>
     <hr/>
     <h2><spring:message code="meal.title"/></h2>
-    <form method="get" action="${pageContext.request.contextPath}/meals/filtered">
+    <form method="get" action="meals/filtered">
         <dl>
             <dt><spring:message code="meal.filterFromDate"/>:</dt>
             <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
@@ -30,7 +30,7 @@
         <button type="submit"><spring:message code="button.filter"/></button>
     </form>
     <hr/>
-    <a href="${pageContext.request.contextPath}/meals/add"><spring:message code="href.addNew"/></a>
+    <a href="meals/add"><spring:message code="href.addNew"/></a>
     <br><br>
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
@@ -53,8 +53,8 @@
                 </td>
                 <td>${meal.description}</td>
                 <td>${meal.calories}</td>
-                <td><a href="${pageContext.request.contextPath}/meals/edit?id=${meal.id}"><spring:message code="href.update"/></a></td>
-                <td><a href="${pageContext.request.contextPath}/meals/delete?id=${meal.id}"><spring:message code="href.delete"/></a></td>
+                <td><a href="meals/edit?id=${meal.id}"><spring:message code="href.update"/></a></td>
+                <td><a href="meals/delete?id=${meal.id}"><spring:message code="href.delete"/></a></td>
             </tr>
         </c:forEach>
     </table>
