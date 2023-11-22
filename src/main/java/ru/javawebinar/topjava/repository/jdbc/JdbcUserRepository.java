@@ -113,9 +113,8 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     private void updateRoles(User user) {
-        Set<Role> newRoles = user.getRoles();
         jdbcTemplate.update("DELETE FROM user_role WHERE user_id=?", user.id());
-        saveRoles(user.id(), newRoles);
+        saveRoles(user.id(), user.getRoles());
     }
 
     private User getWithRoles(List<User> users) {
@@ -124,7 +123,7 @@ public class JdbcUserRepository implements UserRepository {
             return null;
         }
         List<Role> roles = jdbcTemplate.queryForList("SELECT role FROM user_role WHERE user_id=?", Role.class, user.id());
-        user.setRoles(Set.copyOf(roles));
+        user.setRoles(roles);
         return user;
     }
 }

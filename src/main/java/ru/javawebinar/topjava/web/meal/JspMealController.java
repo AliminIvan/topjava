@@ -57,9 +57,7 @@ public class JspMealController extends AbstractMealController {
     @GetMapping("/edit")
     public String edit(Model model, HttpServletRequest request) {
         int id = getId(request);
-        log.info("get meal with id={} for user {}", id, authUserId());
-        Meal meal = service.get(id, authUserId());
-        model.addAttribute("meal", meal);
+        model.addAttribute("meal", super.get(id));
         log.info("forward to mealForm");
         return "mealForm";
     }

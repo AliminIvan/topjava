@@ -33,6 +33,12 @@ public abstract class AbstractMealController {
         return MealsUtil.getTos(service.getAll(userId), SecurityUtil.authUserCaloriesPerDay());
     }
 
+    public Meal get(int id) {
+        int userId = SecurityUtil.authUserId();
+        log.info("get meal with id={} for user {}", id, userId);
+        return service.get(id, userId);
+    }
+
     public void delete(int id) {
         int userId = SecurityUtil.authUserId();
         log.info("delete meal {} for user {}", id, userId);
