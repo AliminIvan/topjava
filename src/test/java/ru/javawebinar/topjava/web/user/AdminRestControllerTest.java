@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
-import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.UserTestData.*;
 
-class AdminRestControllerTest extends AbstractControllerTest {
+class AdminRestControllerTest extends AbstractUserControllerTest {
 
     private static final String REST_URL = AdminRestController.REST_URL + '/';
 
@@ -82,5 +82,18 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(USER_MATCHER.contentJson(admin, guest, user));
+    }
+
+    @Override
+    void getWithMeals() throws Exception {
+        super.getWithMeals();
+        User userFromDb = userService.getWithMeals(ADMIN_ID);
+        ResultActions action = perform(MockMvcRequestBuilders.get(REST_URL + "getWithMeals/" + ADMIN_ID))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(USER_MATCHER.contentJson(admin));
+        User gettedUser = USER_MATCHER.readFromJson(action);
+        MealTestData.MEAL_MATCHER.assertMatch(gettedUser.getMeals(), userFromDb.getMeals());
     }
 }
