@@ -27,7 +27,7 @@
                     login-processing-url="/spring_security_check"/>
         <logout logout-success-url="/login"/>
         <csrf disabled="true"/>
-    </http>r
+    </http>
 
 
     <authentication-manager>
