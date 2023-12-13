@@ -97,13 +97,3 @@ function failNoty(jqXHR) {
     });
     failedNote.show()
 }
-
-// function initializeCommonNotifications(data) {
-//     const commonKeys = ["common.deleted", "common.saved", "common.enabled", "common.disabled", "common.errorStatus", "common.confirm"];
-//     commonKeys.forEach(value => data[value] = "<spring:message code=" + value + "/>");
-// }
-
-// (function () {
-//     const commonKeys = ["common.deleted", "common.saved", "common.enabled", "common.disabled", "common.errorStatus", "common.confirm"];
-//     commonKeys.forEach(value => i18n[value] = '<spring:message code="common.confirm"/>');
-// })();
