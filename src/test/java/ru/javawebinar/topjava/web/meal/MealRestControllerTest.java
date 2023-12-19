@@ -1,17 +1,25 @@
 package ru.javawebinar.topjava.web.meal;
 
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import java.time.Month;
+import java.util.Locale;
+
+import static java.time.LocalDateTime.of;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -22,6 +30,7 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 import static ru.javawebinar.topjava.UserTestData.user;
 import static ru.javawebinar.topjava.util.MealsUtil.createTo;
 import static ru.javawebinar.topjava.util.MealsUtil.getTos;
+import static ru.javawebinar.topjava.web.AbstractExceptionHandler.EXCEPTION_DUPLICATE_DATETIME;
 
 class MealRestControllerTest extends AbstractControllerTest {
 
@@ -143,5 +152,39 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .content(JsonUtil.writeValue(invalidMealForUpdate)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void createWithLocationWhenDuplicateDateTime() throws Exception {
+        Meal duplicateDateTimeMeal = new Meal(null, of(2020, Month.JANUARY, 30, 10, 0), "Обед", 1000);
+        MvcResult result = perform(MockMvcRequestBuilders.post(REST_URL)
+                .with(userHttpBasic(user))
+                .locale(Locale.ENGLISH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(duplicateDateTimeMeal)))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        Assertions.assertTrue(content.contains(EXCEPTION_DUPLICATE_DATETIME));
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void updateWhenDuplicateDateTime() throws Exception {
+        Meal duplicateDateTimeMeal = new Meal(MEAL1_ID, of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000);
+        MvcResult result = perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID)
+                .with(userHttpBasic(user))
+                .locale(Locale.ENGLISH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(duplicateDateTimeMeal)))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        Assertions.assertTrue(content.contains(EXCEPTION_DUPLICATE_DATETIME));
     }
 }

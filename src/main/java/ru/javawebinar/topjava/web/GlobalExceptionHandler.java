@@ -14,28 +14,27 @@ import ru.javawebinar.topjava.util.ValidationUtil;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
-import static ru.javawebinar.topjava.util.exception.ExceptionUtil.CONSTRAINTS_MAP;
-
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends AbstractExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ModelAndView conflict(HttpServletRequest req, Exception e) throws Exception {
+    public ModelAndView conflict(HttpServletRequest req, Exception e) {
         log.error("Exception at request " + req.getRequestURL(), e);
         Throwable rootCause = ValidationUtil.getRootCause(e);
         HttpStatus httpStatus = HttpStatus.CONFLICT;
         ModelAndView modelAndView = new ModelAndView("exception", Map.of(
-              "exception", rootCause, "status", httpStatus
+                "exception", rootCause, "status", httpStatus
         ));
 
         ModelMap modelMap = modelAndView.getModelMap();
         String rootMsg = rootCause.getMessage();
         if (rootMsg != null) {
             String lowerCaseMsg = rootMsg.toLowerCase();
-            for (Map.Entry<String, String> entry : CONSTRAINTS_MAP.entrySet()) {
+            for (Map.Entry<String, String> entry : CONSTRAINTS_VIOLATION_MAP.entrySet()) {
                 if (lowerCaseMsg.contains(entry.getKey())) {
-                    modelMap.put("message", entry.getValue());
+                    modelMap.put("message", messageSource.getMessage(getMessageCodeFromConstraintKey(entry.getKey()), null,
+                            entry.getValue(), req.getLocale()));
                 }
             }
         } else {
@@ -53,7 +52,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ModelAndView defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
+    public ModelAndView defaultErrorHandler(HttpServletRequest req, Exception e) {
         log.error("Exception at request " + req.getRequestURL(), e);
         Throwable rootCause = ValidationUtil.getRootCause(e);
 
