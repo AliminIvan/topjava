@@ -17,21 +17,21 @@
                 </button>
             </form:form>
         </sec:authorize>
-        <sec:authorize access="isAnonymous()">
             <form:form class="form-inline my-2" id="login_form" action="spring_security_check" method="post">
+                <sec:authorize access="isAnonymous()">
                 <input class="form-control mr-1" type="text" placeholder="Email" name="username">
                 <input class="form-control mr-1" type="password" placeholder="Password" name="password">
                 <button class="btn btn-success" type="submit">
                     <span class="fa fa-sign-in"></span>
                 </button>
+                </sec:authorize>
+                <div class="nav-item dropdown">
+                    <a class="dropdown-toggle nav-link my-1 ml-2" data-toggle="dropdown">${pageContext.response.locale}</a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?lang=en">English</a>
+                        <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?lang=ru">Русский</a>
+                    </div>
+                </div>
             </form:form>
-        </sec:authorize>
-    </div>
-    <div class="nav-item dropdown">
-        <a class="dropdown-toggle nav-link my-1 ml-2" data-toggle="dropdown">${pageContext.response.locale}</a>
-        <div class="dropdown-menu">
-            <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?lang=en">English</a>
-            <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?lang=ru">Русский</a>
-        </div>
     </div>
 </nav>
